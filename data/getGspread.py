@@ -5,7 +5,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 # XLS files has to be converted to Google spreadsheet for this script to work
 # Do not simply drag and drop the excel file to drive. Import it instead.
 
-class employeeData:
+class getGspread:
     def __init__(self):
         
         scopes = [

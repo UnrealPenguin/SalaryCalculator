@@ -1,0 +1,14 @@
+HEIGHT = 1500
+WIDTH = 1500
+
+# Basic salary
+# All currency denoted in Birr
+DAILY = 30
+MEDICAL = 4
+INJURY = 4
+TRANSPORTATION = 8 + 5
+LUNCH = 25 + 5
+
+OVERTIMERATE = 5.625
+
+FULLATTENDANCE = 650

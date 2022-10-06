@@ -1,7 +1,12 @@
-from data.employeeData import employeeData
+from tkinter import *
+from Display import Display
+import constants as c
+
+# --------- MOVE TO DISPLAY WHEN IMPLEMENTED
+from data.getGspread import getGspread
 from data.processData import processData
 
-attendance = employeeData()
+attendance = getGspread()
 attendance = attendance.getSpreadSheet("https://docs.google.com/spreadsheets/d/1pPt4M50dhPWkGLJKGGBO-msXP4grRbQvk8n_CTx0qBQ/edit#gid=429097067")
 attendance = attendance.worksheet("考勤记录")
 
@@ -13,3 +18,10 @@ exception.extend([{"date":27, "exception":"dayOff"}, {"date":28, "exception":"da
 exception.extend([{"date":26, "exception":"hourly"}, {"date":29, "exception":"hourly"}, {"date":30, "exception":"hourly"}])
 
 process.calculateAttendance(exception)
+
+# --------- MOVE TO DISPLAY WHEN IMPLEMENTED
+
+root = Tk()
+Display(root, c.WIDTH, c.HEIGHT)
+
+root.mainloop()
