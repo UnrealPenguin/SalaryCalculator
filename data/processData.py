@@ -4,19 +4,16 @@ import constants as c
 
 class processData:
     def __init__(self, _sheet):
-        self.sheet = _sheet
         # Retrieve all data from spreadsheet
-        self.record = self.sheet.get_all_values()
+        self.record = _sheet.get_all_values()
         # Month start
-        self.date = self.sheet.acell('C3').value.split("~")[0].strip()
+        self.date = _sheet.acell('C3').value.split("~")[0].strip()
         self.startFrom = datetime.strptime(self.date, "%Y-%m-%d")
-
+        daysInMonth = int(_sheet.acell('C3').value.split("~")[1].strip()[-2:])
         # Basic salary given every work day 
-        self.basicSalary = c.DAILY+c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH
-         
-    # produces a tuple of : the name (String), 
-    #                       total hours worked (Int), 
-    #                       full attendance (Bool) of an employee
+        self.basicSalary = c.DAILY*daysInMonth
+
+    
     def calculateAttendance(self, _exceptions):
 
         # Check if there are any exceptions this month
@@ -41,6 +38,8 @@ class processData:
 
         # IGNORE DERIBER (special case)
 
+        # SPECIAL BONUS FOR CERTAIN EMPLOYEE HERE
+
     # Array -> Bool
     # Given employee list ignores all non working employees in the spreadsheet
     def isWorking(self, _record):
@@ -52,15 +51,11 @@ class processData:
 
         date = self.startFrom     
         # by default, every employee has full attendance unless missing one day or late/early leave more than 4 hours
-        absentDays = 0
-        totalDaysWorked = 0
-        totalWage = 0
-        totalDeductions = 0
-        infractionTime = 0
+        absentDays = totalWage = totalDeductions = infractionTime = totalAdditional = totalWageWithBonus = totalDaysWorked = totalOT = holidayPay = 0
         fullAttendance = True
 
         for i in range(len(_record)):  
-            daysWorked = OTpay = absentCount = deductions = totalTime = 0          
+            OTpay = absentCount = deductions = totalTime = allowance = OTworked = 0          
             # If there are exceptions
             hasException, j = self.isException(_exceptions, date)
             if(hasException):
@@ -68,35 +63,52 @@ class processData:
                 if(_exceptions[j]["exception"] == "holiday"):
                     # remove from exception array after usage
                     del _exceptions[j] 
+                    daysWorked, allowance, additionalAllowance, holidayPay = self.holiday(_record[i])
+
                 # if exception is a company day off
-                elif(_exceptions[j]["exception"] == "dayOff"):              
+                else:              
                     # remove from exception array after usage
                     del _exceptions[j] 
-                #  if exception is hourly pay
-                else:
-                    del _exceptions[j] 
+                    daysWorked, allowance, additionalAllowance, OTpay, OTworked = self.dayOff(_record[i])
             else:
                 # normal work day calculation
-                daysWorked, OTpay, absentCount, deductions, totalTime = self.normalDay(date, _record[i])
-            
+                daysWorked, allowance, additionalAllowance, OTpay, absentCount, deductions, totalTime, OTworked, sundayPay = self.normalDay(date, _record[i])
+
+            # Time worked
+            totalDaysWorked+=daysWorked
+            totalOT+= OTworked
+        
             # Add up all the calculated data
-            totalDaysWorked += daysWorked
+            totalWage += allowance
+            # Wage for working on sundays
+            totalWage += sundayPay 
+            totalWage += holidayPay
             totalWage += OTpay
+
+            # Additional allowance
+            totalAdditional += additionalAllowance
+
             absentDays += absentCount
-            totalDeductions += deductions
             infractionTime += totalTime
+            
+            totalDeductions += deductions
+            
             # increment date by 1 after each loop
             date += timedelta(days=1)
-       
+
+        totalWage += self.basicSalary
+        totalWagewithAdditional = totalWage + totalAdditional
+
         # check if full attendance is given
         if(absentDays >= 1 or infractionTime > 4):
             fullAttendance = False
         
         if(fullAttendance):
-            totalWage += c.FULLATTENDANCE 
+            totalWageWithBonus = totalWagewithAdditional + c.FULLATTENDANCE 
         
-        totalWage += totalDaysWorked*self.basicSalary
-        
+        # NEEDS TO RETURN: additional Transport/Lunch total, earnings subtotal, earnings subtotal + additional transport/lunch
+        #                   Total deduction, Tax pension, Tax personal income, Deduction Subtotal
+        #                   Total(Earnings subtotal + Deduction Subtotal), Full attendance
 
     # Dict, Datetime -> Bool, index
     # Given a dict and a date produces true and current index if the date matches the exception date 
@@ -105,33 +117,91 @@ class processData:
         if(_exceptions):
             for j in range(len(_exceptions)):
                 if(_date == _exceptions[j]["date"]):
-                    # print(_date)
                     return True, j
             # return False only if none of the date matches
             return False, 0
         else:
             return False, 0
 
-    # Date Array -> Tuple(Int Int Int Int Int)
-    # produces # of days worked, the amount earned (in Birr) from OT, # of time absent  
-    # amount of deductions and totaltime of late and early leave
-    def normalDay(self, _date, _record):
-        absentCount = 0
-        workedDay = 0
-        OTpay = 0
+    # String -> Tuple(Datetime, Int, Int, Int)
+    # Given a record produces the timeworked, timeworked hours, late and early leave
+    def processTime(self, _record):
+        startTime = datetime.strptime("07:00", "%H:%M")
+        endTime = datetime.strptime("17:30", "%H:%M")
+
+        overtime = datetime.strptime("18:00", "%H:%M")
+
+        punchIn = datetime.strptime(_record[0:5], "%H:%M")
+        punchOut = datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M")
+
         late = 0
         earlyLeave = 0
-        deductions = 0
-        
+        # Get the first and last punch in times from the record
+        # if punched in before startTime -> round to startTime
+        # if punch out after endTime -> round to EndTime
+        if(datetime.strptime(_record[0:5], "%H:%M") <= startTime):
+            punchIn = startTime
+        else:
+            # late
+            late = datetime.strptime(_record[0:5], "%H:%M") - startTime
+
+        if(datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M") < endTime ):
+            # early leave
+            earlyLeave = endTime - datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M")
+
+        elif(datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M") >= endTime and
+            datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M") <= overtime):
+            punchOut = endTime
+        else:
+            # if working past 18:00 means overtime. Take the latest punch out time
+            punchOut = datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M") 
+
+        timeWorked = (punchOut-punchIn)
+        timeWorkedHr = timeWorked.seconds/3600
+
+        return timeWorked, timeWorkedHr, late, earlyLeave
+
+    # Date String -> Tuple(Int Int Int Int Int Int Int Int)
+    # produces DaysWorked Allowance, additionalAllowance, the amount earned (in Birr) from OT, # of time absent  
+    # amount of deductions and totaltime of late and early leave and overtime worked
+    def normalDay(self, _date, _record):
+        daysWorked = absentCount = allowance = OTpay = late = earlyLeave = deductions = additionalAllowance = OTworked = sundayPay = 0
+
         # Checks what day of the week it is, if worked on sunday extra pay
         # 0 = monday, 6 = sunday
         if(_date.weekday() != 6):
             if(not _record):
-                print(_date)
                 absentCount += 1
             else:
-                OTpay, late, earlyLeave = self.processTime(_record)
-                workedDay += 1
+                # allowance, additionalAllowance, OTpay, late, earlyLeave = self.processTime(_record)
+                timeWorked, timeWorkedHr, late , earlyLeave = self.processTime(_record)
+
+                # calculate normal salary
+                if(timeWorked < timedelta(hours=8)):
+                    allowance = timeWorkedHr*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
+                    # additional allowance
+                    additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
+                else:
+                    allowance = 8*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
+                    additionalAllowance = 8*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
+
+                # calculate total overtime worked if employee has worked more than 8 hours
+                if(timeWorked > timedelta(hours=8)):
+                    OTworked = timeWorked - timedelta(hours=8)
+                    OTworked = OTworked.seconds/3600
+                    OTpay = OTworked*c.OVERTIMERATE
+
+                daysWorked += 1
+        else:
+            # check if worked on sunday, if yes, give higher hourly wage
+            if(_record):
+                _, timeWorkedHr, *_ = self.processTime(_record)
+
+                sundayPay = timeWorkedHr*c.SUNDAYRATE
+                allowance = timeWorkedHr*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
+                additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
+
+                daysWorked += 1
 
         deductions += self.deductions(late)
         deductions += self.deductions(earlyLeave)
@@ -146,60 +216,54 @@ class processData:
         else:
             totalTime= 0
 
+        return daysWorked, allowance, additionalAllowance, OTpay, absentCount, deductions, totalTime, OTworked, sundayPay
 
-        return workedDay, OTpay, absentCount, deductions, totalTime
 
-    # Array -> Tuple(Int, Int, Int)
-    # Given a record produces the overtime pay, late (min), early leave(min) 
-    def processTime(self, _record):
-        startTime = datetime.strptime("07:00", "%H:%M")
-        endTime = datetime.strptime("17:30", "%H:%M")
-
-        overtime = datetime.strptime("18:00", "%H:%M")
-
-        punchIn = datetime.strptime(_record[0:5], "%H:%M")
-        punchOut = datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M")
-
-        late = 0
-        earlyLeave = 0
-
-        # Get the first and last punch in times from the record
-        # if punched in before startTime -> round to startTime
-        # if punch out after endTime -> round to EndTime
-        if(datetime.strptime(_record[0:5], "%H:%M") <= startTime):
-            punchIn = startTime
-        else:
-            # late
-            late = datetime.strptime(_record[0:5], "%H:%M") - startTime
-
-        if(datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M") >= endTime and
-            datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M") <= overtime):
-            punchOut = endTime
-        elif(datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M") < endTime ):
-            # early leave
-            earlyLeave = endTime - datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M")
-        else:
-            # if working past 18:00 means overtime. Take the latest punch out time
-            punchOut = datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M") 
-
-        # calculate total overtime worked
-        overtimePay = (punchOut-punchIn) - timedelta(hours=8)
-        # get time in int (hours)
-        overtimePay = overtimePay.seconds/3600
-        overtimePay = overtimePay*c.OVERTIMERATE
-
-        return overtimePay, late, earlyLeave
-
-    # -> Int
+    # String -> Tuple(Int Int Int Int Int)
     # produces the amount earned (in Birr) on a day off for employees who work 
     # prevents other employees to lose full attendance if not working on this particular day
-    def dayOff(self):
-        pass
-    # -> Int
+    def dayOff(self, _record):
+        dayWorked = allowance = additionalAllowance = OTpay = OTworked = 0
+        if(_record):
+            # ignore all for the time worked
+            timeWorked, timeWorkedHr, *_ = self.processTime(_record)
+
+            # calculate normal salary
+            if(timeWorked < timedelta(hours=8)):
+                allowance = timeWorkedHr*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
+                # additional allowance
+                additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION+c.POSITION)
+            else:
+                allowance = 8*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH)
+                additionalAllowance = 8*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
+
+            # calculate total overtime worked if employee has worked more than 8 hours
+            if(timeWorked > timedelta(hours=8)):
+                OTworked = timeWorked - timedelta(hours=8)
+                OTworked = OTworked.seconds/3600
+                OTpay = OTworked*c.OVERTIMERATE
+            
+            dayWorked += 1
+        return dayWorked, allowance, additionalAllowance, OTpay, OTworked
+
+    # String -> Tuple(Int Int Int Int Int)
     # produces the amount earned (in Birr) on a holiday for employees who work 
     # prevents other employees to lose full attendance if not working on this particular day
-    def holiday(self):
-        pass
+    def holiday(self, _record):
+        dayWorked = allowance = additionalAllowance = holidayPay = 0
+
+        if(_record):
+            # ignore all for the time worked
+            _, timeWorkedHr, *_ = self.processTime(_record)
+
+            holidayPay = timeWorkedHr*c.HOLIDAYRATE
+            allowance = timeWorkedHr*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
+            additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION+c.POSITION)
+        
+            dayWorked += 1
+
+        return dayWorked, allowance, additionalAllowance, holidayPay
+
 
     # Datetime -> Int 
     # Given a time, calculates the amount to deduct in Birr
