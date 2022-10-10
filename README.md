@@ -4,7 +4,7 @@
 Salary Calculator is an app created to automate the salary calculation process by retrieving each employees attendance data and 
 salary sheet from googlespreadsheets with the help of google's API. This App is built specifically to meet the demands and requirements of 
 a particular company. This code will only work with the data provided from the company. However, the code can easily modified to be 
-compatible with other spreadsheet that formatted differently.
+compatible with other spreadsheet that are formatted differently.
 <br/><br/>
 **You will not be able to retrieve any data without the secret key.**
 
