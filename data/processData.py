@@ -32,10 +32,9 @@ class processData:
 
         # Start from 8th index everything before is useless
         # Iterate by 2 since each row is a data pair
-        # CHANGE BACK TO LEN(RECORD)
         # 16 17 OLANI
         # 8 10 ABAYA
-        for i in range(8, 17, 2):
+        for i in range(8, len(self.record), 2):
             
             # resets on every loop
             diplomaBonus = leadershipBonus = serviceBonus = totalDeductions = totalBeforeBonus = grandTotal =0
@@ -107,15 +106,12 @@ class processData:
                 grandTotal = totalBeforeBonus + attendBonus + diplomaBonus + leadershipBonus + serviceBonus 
 
                 # IGNORE DERIBER - ID 25(special case) 
+                # Format the data so it only shows up to 2 decimals
                 if(employeeID != "25"):
-                    self.allEmployees.append(Employee(  name, daysWorked, overtimeWorked, additionalAllowance, subTotal, STwithAddAllow, 
-                                                        deductions, incomeTax, pension, totalDeductions, totalBeforeBonus,
-                                                        attendBonus, diplomaBonus, leadershipBonus, serviceBonus, grandTotal))
-                
-                
-
-
-
+                    self.allEmployees.append(Employee(  employeeID, name, daysWorked, float("{:.2f}".format(overtimeWorked)), float("{:.2f}".format(additionalAllowance)), float("{:.2f}".format(subTotal)), float("{:.2f}".format(STwithAddAllow)), 
+                                                        deductions, incomeTax, pension, totalDeductions, float("{:.2f}".format(totalBeforeBonus)),
+                                                        attendBonus, diplomaBonus, leadershipBonus, serviceBonus, float("{:.2f}".format(grandTotal))))
+            
     # Array -> Bool
     # Given employee list ignores all non working employees in the spreadsheet
     def isWorking(self, _record):
@@ -127,18 +123,18 @@ class processData:
 
         date = self.startFrom     
         # by default, every employee has full attendance unless missing one day or late/early leave more than 4 hours
-        absentDays = totalWage = totalDeductions = infractionTime = totalAdditional = totalDaysWorked = totalOT = holidayPay = 0
+        absentDays = totalWage = totalDeductions = infractionTime = totalAdditional = totalDaysWorked = totalOT = 0
         fullAttendance = True
 
         for i in range(len(_record)):  
-            OTpay = absentCount = deductions = totalTime = allowance = OTworked = 0          
+            OTpay = absentCount = deductions = totalTime = allowance = OTworked = holidayPay = 0   
+
             # If there are exceptions
             hasException, j = self.isException(_exceptions, date)
             if(hasException):
                 # if exception is a holiday
                 if(_exceptions[j]["exception"] == "holiday"):
                     daysWorked, allowance, additionalAllowance, holidayPay = self.holiday(_record[i])
-
                 # if exception is a company day off
                 else:              
                     daysWorked, allowance, additionalAllowance, OTpay, OTworked = self.dayOff(_record[i])
@@ -367,3 +363,19 @@ class processData:
     # returns the list of all the employees
     def getAllEmployees(self):
         return self.allEmployees
+
+    # Array -> dictionnary
+    # Given an array of dates produces a dictionnary of exceptions
+    # _type 0 is dayoff, 1 is holiday
+    def createExceptions(self, _date, _type):
+        _tempArr = []
+        for i in range(len(_date)):
+            if(_type == 0):
+                _tempVal = {"date": _date[i], "exception": "dayOff"}
+
+            elif(_type== 1):
+                _tempVal = {"date": _date[i], "exception": "holiday"}
+
+            _tempArr.append(_tempVal)
+
+        return _tempArr

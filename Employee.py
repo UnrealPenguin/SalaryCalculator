@@ -1,8 +1,9 @@
 class Employee:
-    def __init__(   self, _name, _daysWorked, _overtimeWorked, _additionalAllowance, _subTotal, _STwithAddAllow, 
+    def __init__(   self, _id, _name, _daysWorked, _overtimeWorked, _additionalAllowance, _subTotal, _STwithAddAllow, 
                     _deductions, _incomeTax, _pension, _totalDeductions, _totalBeforeBonus,
                     _fullAttend, _diplomaBonus, _leadershipBonus, _serviceBonus, _grandTotal):
 
+        self.id = _id
         self.name = _name
         self.daysWorked = _daysWorked
         self.OTworked = _overtimeWorked
@@ -21,6 +22,9 @@ class Employee:
         self.grandTotal = _grandTotal
 
     # Getter functions
+    def getId(self):
+        return self.id
+        
     def getName(self):
         return self.name
 
