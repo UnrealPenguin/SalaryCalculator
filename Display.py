@@ -1,5 +1,6 @@
 from tkinter import *
 import constants as c
+from pandastable import Table, TableModel
 
 class Display():
     def __init__(self, parent, width, height):
@@ -19,10 +20,9 @@ class Display():
         step1.place(x=50, y=100)
 
         step1description = Label(container, 
-                                text="Insert google spreadsheet link. (Does not take .xls or .xlsx) If .xls or xlsx format, Import it Gspread to convert to google spreadsheet format.",
+                                text="Insert google spreadsheet link. (Does not take .xls or .xlsx) If .xls or xlsx format, Import it in google spreadsheet to convert correct format.",
                                 bg=c.BGCOLOR, fg="white")
-        step1description.place(x=50, y=150)
-                        
+        step1description.place(x=50, y=150)     
 
         # FOR ATTENDANCE DATA
         attendanceLabel = Label(container, text="Attendance Link:", bg=c.BGCOLOR, fg="white")
@@ -35,8 +35,6 @@ class Display():
         self.taxInput = Entry(container)
         taxLabel.place(x=50, y=230)
         self.taxInput.place(x=145, y=230)
-        # btnAttendance = Button(container, text="Fetch", command=self.getAttendanceRecord)
-        # btnAttendance.place(x=275, y=198)
 
         # FOR EXCEPTIONS
         step2 = Label(container, text="Step 2", bg=c.BGCOLOR, fg="white", font=(None, 18))
@@ -59,6 +57,10 @@ class Display():
         dayOffLabel.place(x=50, y=410)
         self.dayOffInput.place(x=145, y=410)
 
+        # FOR DISPLAYING THE NEW DF
+        btnCalculate = Button(container, text="Calculate Salary", command=self.displayDF)
+        btnCalculate.place(x=850, y=950)
+
         self.attendanceLink = ""
         self.taxLink = ""
         self.dayOffDate = []
@@ -70,6 +72,15 @@ class Display():
         # to do (array)
         self.dayOffDate = self.dayOffInput.get()
         self.holidayDate = self.holidayInput.get()
+
+    def getData(self):
+        df = TableModel.getSampleData()
+        return df
+
+    def displayDF(self):
+        frame = Toplevel(self.parent)
+        self.table = Table(frame, dataframe=self.getData(), showtoolbar=True, showstatusbar=True)
+        self.table.show()
 
 
 

@@ -1,21 +1,28 @@
 
 from datetime import date, datetime, timedelta
 import constants as c
+from Employee import Employee
 
 class processData:
-    def __init__(self, _sheet):
-        # Retrieve all data from spreadsheet
-        self.record = _sheet.get_all_values()
+    def __init__(self, _attendanceSheet, _taxSheet):
+        # Retrieve attendance data 
+        self.record = _attendanceSheet.get_all_values()
+        # Retrieve tax data 
+        self.taxSheet = _taxSheet
+        # get all active employees id number
+        self.taxEmployeeId = [id for id in _taxSheet.col_values(15) if id]
+
         # Month start
-        self.date = _sheet.acell('C3').value.split("~")[0].strip()
+        self.date = _attendanceSheet.acell('C3').value.split("~")[0].strip()
         self.startFrom = datetime.strptime(self.date, "%Y-%m-%d")
-        daysInMonth = int(_sheet.acell('C3').value.split("~")[1].strip()[-2:])
+        daysInMonth = int(_attendanceSheet.acell('C3').value.split("~")[1].strip()[-2:])
         # Basic salary given every work day 
         self.basicSalary = c.DAILY*daysInMonth
 
+        self.allEmployees = []
     
     def calculateAttendance(self, _exceptions):
-
+        incomeTax = pension = 0
         # Check if there are any exceptions this month
         if(_exceptions):
             for i in range(len(_exceptions)):
@@ -28,30 +35,99 @@ class processData:
         # CHANGE BACK TO LEN(RECORD)
         # 16 17 OLANI
         # 8 10 ABAYA
-        for i in range(16, 17, 2):
+        for i in range(8, 17, 2):
+            
+            # resets on every loop
+            diplomaBonus = leadershipBonus = serviceBonus = totalDeductions = totalBeforeBonus = grandTotal =0
             
             if(self.isWorking(self.record[i+1])):
-                # 9th element is always going to be the name
+                # 2nd element is employee ID 9th element is the name
+                employeeID = self.record[i][2]
                 name = self.record[i][10]
-                self.checkRecord(self.record[i+1], _exceptions)
-                # create employee here (?)
+                daysWorked, overtimeWorked, additionalAllowance, subTotal, STwithAddAllow, deductions,  fullAttend = self.checkRecord(self.record[i+1], _exceptions)
 
-        # IGNORE DERIBER (special case)
+                try:
+                    cellLocation = self.taxSheet.find(employeeID, in_column=15)
+                    incomeTax, pension = self.checkTax(cellLocation)
+                except AttributeError:
+                    # if employee doesnt have an ID yet, no income tax or pension yet
+                    incomeTax = pension = 0
 
-        # SPECIAL BONUS FOR CERTAIN EMPLOYEE HERE
+                # Add up all deductions
+                totalDeductions = incomeTax + pension + deductions
+
+                # remove incomeTax and pension from STwithAddAllow
+                totalBeforeBonus = STwithAddAllow - totalDeductions
+                
+                # Special bonus for employee
+                # diploma, service & leadership
+                if(employeeID == "3"):
+                    serviceBonus = 380
+                    leadershipBonus = 1300
+
+                elif(employeeID == "7"):
+                    diplomaBonus = 100
+                    serviceBonus = 90
+                    leadershipBonus = 800
+
+                elif(employeeID == "9"):
+                    serviceBonus = 210
+                    leadershipBonus = 800
+
+                elif(employeeID == "10"):
+                    serviceBonus = 390
+                    leadershipBonus = 800
+                
+                elif(employeeID == "15"):
+                    serviceBonus = 55
+
+                elif(employeeID == "16"):
+                    serviceBonus = 55 
+
+                elif(employeeID == "17"):
+                    diplomaBonus = 150
+                    serviceBonus = 50
+                    leadershipBonus = 300
+
+                elif(employeeID == "18"):
+                    serviceBonus = 55
+
+                elif(employeeID == "28"):
+                    serviceBonus = 30
+
+                elif(employeeID == "30"):
+                    serviceBonus = 20
+                
+                # check if full attendance is given
+                if(fullAttend):
+                    attendBonus = 650
+                else:
+                    attendBonus = 0
+                    
+                grandTotal = totalBeforeBonus + attendBonus + diplomaBonus + leadershipBonus + serviceBonus 
+
+                # IGNORE DERIBER - ID 25(special case) 
+                if(employeeID != "25"):
+                    self.allEmployees.append(Employee(  name, daysWorked, overtimeWorked, additionalAllowance, subTotal, STwithAddAllow, 
+                                                        deductions, incomeTax, pension, totalDeductions, totalBeforeBonus,
+                                                        attendBonus, diplomaBonus, leadershipBonus, serviceBonus, grandTotal))
+                
+                
+
+
 
     # Array -> Bool
     # Given employee list ignores all non working employees in the spreadsheet
     def isWorking(self, _record):
         return False if not any(s.strip() for s in _record) else True
     
-    # Array Array -> Tuple
+    # Array Array -> Tuple(Int, Float, Float, Float, Float, Float, Bool)
     # Given an employees record and a list of exception(dates) calculate his total hours worked
     def checkRecord(self, _record, _exceptions):   
 
         date = self.startFrom     
         # by default, every employee has full attendance unless missing one day or late/early leave more than 4 hours
-        absentDays = totalWage = totalDeductions = infractionTime = totalAdditional = totalWageWithBonus = totalDaysWorked = totalOT = holidayPay = 0
+        absentDays = totalWage = totalDeductions = infractionTime = totalAdditional = totalDaysWorked = totalOT = holidayPay = 0
         fullAttendance = True
 
         for i in range(len(_record)):  
@@ -61,15 +137,12 @@ class processData:
             if(hasException):
                 # if exception is a holiday
                 if(_exceptions[j]["exception"] == "holiday"):
-                    # remove from exception array after usage
-                    del _exceptions[j] 
                     daysWorked, allowance, additionalAllowance, holidayPay = self.holiday(_record[i])
 
                 # if exception is a company day off
                 else:              
-                    # remove from exception array after usage
-                    del _exceptions[j] 
                     daysWorked, allowance, additionalAllowance, OTpay, OTworked = self.dayOff(_record[i])
+
             else:
                 # normal work day calculation
                 daysWorked, allowance, additionalAllowance, OTpay, absentCount, deductions, totalTime, OTworked, sundayPay = self.normalDay(date, _record[i])
@@ -97,18 +170,13 @@ class processData:
             date += timedelta(days=1)
 
         totalWage += self.basicSalary
-        totalWagewithAdditional = totalWage + totalAdditional
 
         # check if full attendance is given
         if(absentDays >= 1 or infractionTime > 4):
             fullAttendance = False
         
-        if(fullAttendance):
-            totalWageWithBonus = totalWagewithAdditional + c.FULLATTENDANCE 
-        
-        # NEEDS TO RETURN: additional Transport/Lunch total, earnings subtotal, earnings subtotal + additional transport/lunch
-        #                   Total deduction, Tax pension, Tax personal income, Deduction Subtotal
-        #                   Total(Earnings subtotal + Deduction Subtotal), Full attendance
+        return totalDaysWorked, totalOT, totalAdditional, totalWage, totalWage+totalAdditional, totalDeductions, fullAttendance
+
 
     # Dict, Datetime -> Bool, index
     # Given a dict and a date produces true and current index if the date matches the exception date 
@@ -264,7 +332,6 @@ class processData:
 
         return dayWorked, allowance, additionalAllowance, holidayPay
 
-
     # Datetime -> Int 
     # Given a time, calculates the amount to deduct in Birr
     def deductions(self, _time):
@@ -286,5 +353,17 @@ class processData:
             toDeduct += 50
         else: 
             toDeduct += 70
-
         return toDeduct
+
+    # Array -> Tuple(Float, Float)
+    # Given the tax record returns the income tax and pension
+    def checkTax(self, _cellLocation):
+        # 9  is income Tax, 10 is pension
+        incomeTax = self.taxSheet.cell(_cellLocation.row, 9).value.strip().replace(",","")
+        pension = self.taxSheet.cell(_cellLocation.row, 10).value.strip().replace(",","")
+
+        return float(incomeTax), float(pension)
+
+    # returns the list of all the employees
+    def getAllEmployees(self):
+        return self.allEmployees

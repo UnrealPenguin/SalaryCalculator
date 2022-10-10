@@ -9,8 +9,8 @@ class getGspread:
     def __init__(self):
         
         scopes = [
-            "https://www.googleapis.com/auth/spreadsheets.readonly",
-            "https://www.googleapis.com/auth/drive.readonly"
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive"
         ]
         
         cred = ServiceAccountCredentials.from_json_keyfile_name("data\secret_key.json", scopes=scopes)
