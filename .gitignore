@@ -1,1 +1,4 @@
 /data/secret_key.json
+/App.spec
+/dist/
+/build/
