@@ -1,7 +1,7 @@
 from tkinter import *
-import constants as c
+import Constants as c
 import pandas as pd
-from pandastable import Table, TableModel
+from pandastable import Table
 
 from data.getGspread import getGspread
 from data.processData import processData

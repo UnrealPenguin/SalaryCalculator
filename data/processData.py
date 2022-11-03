@@ -1,6 +1,6 @@
 
 from datetime import date, datetime, timedelta
-import constants as c
+import Constants as c
 from Employee import Employee
 
 class processData:
@@ -18,7 +18,7 @@ class processData:
         daysInMonth = int(_attendanceSheet.acell('C3').value.split("~")[1].strip()[-2:])
         # Basic salary given every work day 
         self.basicSalary = c.DAILY*daysInMonth
-
+  
         self.allEmployees = []
     
     def calculateAttendance(self, _exceptions):
@@ -123,9 +123,9 @@ class processData:
 
         date = self.startFrom     
         # by default, every employee has full attendance unless missing one day or late/early leave more than 4 hours
-        absentDays = totalWage = totalDeductions = infractionTime = totalAdditional = totalDaysWorked = totalOT = 0
+        absentDays = totalWage = totalDeductions = infractionTime = totalAdditional = totalDaysWorked = totalOT = sundayPay = 0
         fullAttendance = True
-
+   
         for i in range(len(_record)):  
             OTpay = absentCount = deductions = totalTime = allowance = OTworked = holidayPay = 0   
 
@@ -243,6 +243,7 @@ class processData:
                 # calculate normal salary
                 if(timeWorked < timedelta(hours=8)):
                     allowance = timeWorkedHr*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
+
                     # additional allowance
                     additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
                 else:
@@ -264,7 +265,7 @@ class processData:
                 sundayPay = timeWorkedHr*c.SUNDAYRATE
                 allowance = timeWorkedHr*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
                 additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
-
+            
                 daysWorked += 1
 
         deductions += self.deductions(late)
@@ -279,7 +280,7 @@ class processData:
             totalTime = (earlyLeave.seconds/3600)
         else:
             totalTime= 0
-
+ 
         return daysWorked, allowance, additionalAllowance, OTpay, absentCount, deductions, totalTime, OTworked, sundayPay
 
 
@@ -288,6 +289,7 @@ class processData:
     # prevents other employees to lose full attendance if not working on this particular day
     def dayOff(self, _record):
         dayWorked = allowance = additionalAllowance = OTpay = OTworked = 0
+  
         if(_record):
             # ignore all for the time worked
             timeWorked, timeWorkedHr, *_ = self.processTime(_record)
@@ -296,18 +298,23 @@ class processData:
             if(timeWorked < timedelta(hours=8)):
                 allowance = timeWorkedHr*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
                 # additional allowance
-                additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION+c.POSITION)
+                additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
+                print(allowance)
+                print(additionalAllowance)
             else:
-                allowance = 8*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH)
+                allowance = 8*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
                 additionalAllowance = 8*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
+  
+
 
             # calculate total overtime worked if employee has worked more than 8 hours
             if(timeWorked > timedelta(hours=8)):
                 OTworked = timeWorked - timedelta(hours=8)
                 OTworked = OTworked.seconds/3600
                 OTpay = OTworked*c.OVERTIMERATE
-            
+
             dayWorked += 1
+
         return dayWorked, allowance, additionalAllowance, OTpay, OTworked
 
     # String -> Tuple(Int Int Int Int Int)
@@ -322,7 +329,7 @@ class processData:
 
             holidayPay = timeWorkedHr*c.HOLIDAYRATE
             allowance = timeWorkedHr*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
-            additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION+c.POSITION)
+            additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
         
             dayWorked += 1
 
