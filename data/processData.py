@@ -34,6 +34,7 @@ class processData:
         # Iterate by 2 since each row is a data pair
         # 16 17 OLANI
         # 8 10 ABAYA
+        # 70, 71
         for i in range(8, len(self.record), 2):
             
             # resets on every loop
@@ -96,6 +97,10 @@ class processData:
 
                 elif(employeeID == "30"):
                     serviceBonus = 20
+
+                elif(employeeID == "33"):
+                    diplomaBonus = 100
+                    leadershipBonus = 300
                 
                 # check if full attendance is given
                 if(fullAttend):
@@ -203,6 +208,11 @@ class processData:
         # Get the first and last punch in times from the record
         # if punched in before startTime -> round to startTime
         # if punch out after endTime -> round to EndTime
+        # if employee forgot to clock in or clock out
+
+        if(punchOut-punchIn < timedelta(seconds=1)):
+            return timedelta(seconds=0), 0, late, earlyLeave
+            
         if(datetime.strptime(_record[0:5], "%H:%M") <= startTime):
             punchIn = startTime
         else:
@@ -255,8 +265,12 @@ class processData:
                     OTworked = timeWorked - timedelta(hours=8)
                     OTworked = OTworked.seconds/3600
                     OTpay = OTworked*c.OVERTIMERATE
-
-                daysWorked += 1
+                
+                # if employee forgot to clock in or out
+                if(timeWorkedHr < 1):
+                    absentCount += 1
+                else:
+                    daysWorked += 1
         else:
             # check if worked on sunday, if yes, give higher hourly wage
             if(_record):
@@ -265,8 +279,11 @@ class processData:
                 sundayPay = timeWorkedHr*c.SUNDAYRATE
                 allowance = timeWorkedHr*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
                 additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
-            
-                daysWorked += 1
+
+                if(timeWorkedHr < 1):
+                    absentCount += 1
+                else:
+                    daysWorked += 1
 
         deductions += self.deductions(late)
         deductions += self.deductions(earlyLeave)
@@ -299,14 +316,11 @@ class processData:
                 allowance = timeWorkedHr*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
                 # additional allowance
                 additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
-                print(allowance)
-                print(additionalAllowance)
+
             else:
                 allowance = 8*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
                 additionalAllowance = 8*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
   
-
-
             # calculate total overtime worked if employee has worked more than 8 hours
             if(timeWorked > timedelta(hours=8)):
                 OTworked = timeWorked - timedelta(hours=8)
@@ -342,16 +356,16 @@ class processData:
         # return if theres no deductions
         if(_time == 0):
             return toDeduct
-        elif(_time > timedelta(minutes=1) and _time < timedelta(minutes=5)):
+        elif(_time > timedelta(minutes=0) and _time < timedelta(minutes=6)):
             # 1-5min late, 10 birr deduction
             toDeduct += 10
-        elif(_time > timedelta(minutes=5) and _time < timedelta(minutes=10)):
+        elif(_time > timedelta(minutes=5) and _time < timedelta(minutes=11)):
             # 6-10min late, 20 birr deduction
             toDeduct += 20
-        elif(_time > timedelta(minutes=10) and _time < timedelta(minutes=20)):
+        elif(_time > timedelta(minutes=10) and _time < timedelta(minutes=21)):
             # 11-20min late, 30 birr deduction
             toDeduct += 30
-        elif(_time > timedelta(minutes=20) and _time < timedelta(minutes=50)):
+        elif(_time > timedelta(minutes=20) and _time < timedelta(minutes=51)):
             # 20-50min late, 50 birr deduction
             toDeduct += 50
         else: 
