@@ -11,7 +11,7 @@ def addEmployeeID(_sheet):
     _sheet.update('O8', 9)
 
     # SHEBIRE
-    _sheet.update('O9', 10)
+    _sheet.update('O6', 10)
 
     # AYANTU
     # _sheet.update('O12', 15)
@@ -22,8 +22,11 @@ def addEmployeeID(_sheet):
     # GALANE
     _sheet.update('O10', 17)
 
+    # DERIBE
+    _sheet.update('O11', 25)
+
     # CHALTU
-    _sheet.update('O15', 18)
+    # _sheet.update('O15', 18)
 
     # ABABAYA
     _sheet.update('O24', 28)
@@ -35,7 +38,7 @@ def addEmployeeID(_sheet):
     _sheet.update('O23', 33)
 
     # GENET
-    _sheet.update('O29', 34)
+    _sheet.update('O15', 34)
 
     #GOSOMA
     _sheet.update('O13',41)

@@ -68,11 +68,11 @@ class processData:
                 elif(employeeID == "7"):
                     diplomaBonus = 100
                     serviceBonus = 90
-                    leadershipBonus = 800
+                    leadershipBonus = 100
 
                 elif(employeeID == "9"):
                     serviceBonus = 210
-                    leadershipBonus = 800
+                    leadershipBonus = 1100
 
                 elif(employeeID == "10"):
                     serviceBonus = 390
@@ -92,6 +92,9 @@ class processData:
                 elif(employeeID == "18"):
                     serviceBonus = 55
 
+                elif(employeeID == "25"):
+                    serviceBonus = 30 
+
                 elif(employeeID == "28"):
                     serviceBonus = 30
 
@@ -100,6 +103,9 @@ class processData:
 
                 elif(employeeID == "33"):
                     diplomaBonus = 100
+                    leadershipBonus = 300
+
+                elif(employeeID == "41"):
                     leadershipBonus = 300
                 
                 # check if full attendance is given
@@ -110,12 +116,10 @@ class processData:
                     
                 grandTotal = totalBeforeBonus + attendBonus + diplomaBonus + leadershipBonus + serviceBonus 
 
-                # IGNORE DERIBER - ID 25(special case) 
                 # Format the data so it only shows up to 2 decimals
-                if(employeeID != "25"):
-                    self.allEmployees.append(Employee(  employeeID, name, daysWorked, float("{:.2f}".format(overtimeWorked)), float("{:.2f}".format(additionalAllowance)), float("{:.2f}".format(subTotal)), float("{:.2f}".format(STwithAddAllow)), 
-                                                        deductions, incomeTax, pension, totalDeductions, float("{:.2f}".format(totalBeforeBonus)),
-                                                        attendBonus, diplomaBonus, leadershipBonus, serviceBonus, float("{:.2f}".format(grandTotal))))
+                self.allEmployees.append(Employee(employeeID, name, daysWorked, float("{:.2f}".format(overtimeWorked)), float("{:.2f}".format(additionalAllowance)), float("{:.2f}".format(subTotal)), float("{:.2f}".format(STwithAddAllow)), 
+                                                    deductions, incomeTax, pension, totalDeductions, float("{:.2f}".format(totalBeforeBonus)),
+                                                    attendBonus, diplomaBonus, leadershipBonus, serviceBonus, float("{:.2f}".format(grandTotal))))
             
     # Array -> Bool
     # Given employee list ignores all non working employees in the spreadsheet
