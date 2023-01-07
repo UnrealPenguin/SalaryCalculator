@@ -106,16 +106,49 @@ class Display():
                 {
                     "ID": employee.getId(),
                     "Name": employee.getName(),
+                    "NORMAL HOURS" : "",
                     "Days worked": employee.getDaysWorked(),
+                    "OVERTIME HOURS" : "",
                     "Overtime (hours)": employee.getOTworked(),
-                    "Additional Allowance": employee.getAddAllow(),
+
+                    "LATE TIMES" : "",
+                    "1-5min": employee.getLate5Min(),
+                    "6-10min": employee.getLate10Min(),
+                    "11-20min": employee.getLate20Min(),
+                    "21-50min": employee.getLate50Min(),
+                    "50+min": employee.getLateMax(),
+
+                    "EARLY TIMES" : "",
+                    "1-5 min": employee.getEarly5Min(),
+                    "6-10 min": employee.getEarly10Min(),
+                    "11-20 min": employee.getEarly20Min(),
+                    "21-50 min": employee.getEarly50Min(),
+                    "50+ min": employee.getEarlyMax(),
+                    
+                    " ": "",
+
+                    "EARNING CALCULATIONS": "",
+                    "Basic Salary": employee.getTotalBasicSalary(),
+                    "Transportation": employee.getTotalTransportation(),
+                    "Medical": employee.getTotalMedical(),
+                    "Injury": employee.getTotalInjury(),
+                    "Lunch": employee.getTotalLunch(),
+                    "Position": employee.getTotalPosition(),
+                    "Additional lunch": employee.getTotalAddLunch(),
+                    "Additional transportation": employee.getTotalAddTransportation(),
+
+                    "Additional Allowance total": employee.getAddAllow(),
                     "SubTotal": employee.getSubTotal(),
                     "SubTotal + Additional Allowance": employee.getSubTotalWithAdd(),
+
+                    "   ": "",
 
                     "Deductions": employee.getDeductions(),
                     "Income Tax": employee.getIncomeTax(),
                     "Pension": employee.getPension(),
                     "Total Deductions": employee.getTotalDeductions(),
+
+                    "    ": "",
 
                     "Total Before Bonus": employee.getTotalBeforeBonus(),
                     "Full Attendance": employee.getFullAttend(),
@@ -140,13 +173,13 @@ class Display():
         self.table.showindex = True
 
         # Styling the table
-        self.table.setRowColors(rows=[0, 1, 2], clr="lightblue", cols='all')
-        self.table.setRowColors(rows=[3, 4, 5], clr="lightgreen", cols='all')
-        self.table.setRowColors(rows=[6, 7, 8], clr="#EF6E6E", cols='all')
-        self.table.setRowColors(rows=9, clr="#E24141", cols='all')
-        self.table.setRowColors(rows=10, clr="#58D337", cols='all')
-        self.table.setRowColors(rows=[11,12,13,14], clr="#F7F98E", cols='all')
-        self.table.setRowColors(rows=15, clr="#CCC72B", cols='all')
+        self.table.setRowColors(rows=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16], clr="lightblue", cols='all')
+        self.table.setRowColors(rows=[18, 19,20,21,22,23,24,25,26,27,28,29], clr="lightgreen", cols='all')
+        self.table.setRowColors(rows=[31,32,33], clr="#EF6E6E", cols='all')
+        self.table.setRowColors(rows=34, clr="#E24141", cols='all')
+        self.table.setRowColors(rows=36, clr="#58D337", cols='all')
+        self.table.setRowColors(rows=[37,38,39,40], clr="#F7F98E", cols='all')
+        self.table.setRowColors(rows=41, clr="#CCC72B", cols='all')
 
         self.table.show()
 

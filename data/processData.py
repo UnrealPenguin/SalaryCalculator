@@ -44,7 +44,7 @@ class processData:
                 # 2nd element is employee ID 9th element is the name
                 employeeID = self.record[i][2]
                 name = self.record[i][10]
-                daysWorked, overtimeWorked, additionalAllowance, subTotal, STwithAddAllow, deductions,  fullAttend = self.checkRecord(self.record[i+1], _exceptions)
+                daysWorked, overtimeWorked, additionalAllowance, subTotal, STwithAddAllow, deductions,  fullAttend, late5min, late10min, late20min, late50min, lateMax, early5min, early10min, early20min, early50min, earlyMax, totalBasicSalary, totalTransportation, totalMedical, totalInjury, totalLunch, totalPosition, totalAddLunch, totalAddTransportation = self.checkRecord(self.record[i+1], _exceptions)
 
                 try:
                     cellLocation = self.taxSheet.find(employeeID, in_column=15)
@@ -68,7 +68,7 @@ class processData:
                 elif(employeeID == "7"):
                     diplomaBonus = 100
                     serviceBonus = 90
-                    leadershipBonus = 100
+                    leadershipBonus = 1100
 
                 elif(employeeID == "9"):
                     serviceBonus = 210
@@ -100,6 +100,7 @@ class processData:
 
                 elif(employeeID == "30"):
                     serviceBonus = 20
+                    leadershipBonus = 300
 
                 elif(employeeID == "33"):
                     diplomaBonus = 100
@@ -119,7 +120,9 @@ class processData:
                 # Format the data so it only shows up to 2 decimals
                 self.allEmployees.append(Employee(employeeID, name, daysWorked, float("{:.2f}".format(overtimeWorked)), float("{:.2f}".format(additionalAllowance)), float("{:.2f}".format(subTotal)), float("{:.2f}".format(STwithAddAllow)), 
                                                     deductions, incomeTax, pension, totalDeductions, float("{:.2f}".format(totalBeforeBonus)),
-                                                    attendBonus, diplomaBonus, leadershipBonus, serviceBonus, float("{:.2f}".format(grandTotal))))
+                                                    attendBonus, diplomaBonus, leadershipBonus, serviceBonus, float("{:.2f}".format(grandTotal)),
+                                                    late5min, late10min, late20min, late50min, lateMax, early5min, early10min, early20min, early50min, earlyMax,
+                                                    totalBasicSalary, totalTransportation, totalMedical, totalInjury, totalLunch, totalPosition, totalAddLunch, totalAddTransportation))
             
     # Array -> Bool
     # Given employee list ignores all non working employees in the spreadsheet
@@ -133,24 +136,29 @@ class processData:
         date = self.startFrom     
         # by default, every employee has full attendance unless missing one day or late/early leave more than 4 hours
         absentDays = totalWage = totalDeductions = infractionTime = totalAdditional = totalDaysWorked = totalOT = sundayPay = 0
+        totalLate5min = totalLate10min = totalLate20min = totalLate50min = totalLateMax = totalEarly5min= totalEarly10min= totalEarly20min= totalEarly50min = totalEarlyMax = 0
+
+        totalBasicSalary = totalTransportation = totalMedical = totalInjury = totalLunch = totalPosition = totalAddLunch = totalAddTransportation = 0
+
         fullAttendance = True
    
         for i in range(len(_record)):  
             OTpay = absentCount = deductions = totalTime = allowance = OTworked = holidayPay = 0   
+            
 
             # If there are exceptions
             hasException, j = self.isException(_exceptions, date)
             if(hasException):
                 # if exception is a holiday
                 if(_exceptions[j]["exception"] == "holiday"):
-                    daysWorked, allowance, additionalAllowance, holidayPay = self.holiday(_record[i])
+                    daysWorked, allowance, additionalAllowance, holidayPay, transportation, medical, injury, lunch, position, addLunch, addTransportation = self.holiday(_record[i])
                 # if exception is a company day off
                 else:              
-                    daysWorked, allowance, additionalAllowance, OTpay, OTworked = self.dayOff(_record[i])
+                    daysWorked, allowance, additionalAllowance, OTpay, OTworked, transportation, medical, injury, lunch, position, addLunch, addTransportation = self.dayOff(_record[i])
 
             else:
                 # normal work day calculation
-                daysWorked, allowance, additionalAllowance, OTpay, absentCount, deductions, totalTime, OTworked, sundayPay = self.normalDay(date, _record[i])
+                daysWorked, allowance, additionalAllowance, OTpay, absentCount, deductions, totalTime, OTworked, sundayPay,  late5min, late10min, late20min, late50min, lateMax, early5min, early10min, early20min, early50min, earlyMax, transportation, medical, injury, lunch, position, addLunch, addTransportation = self.normalDay(date, _record[i])
 
             # Time worked
             totalDaysWorked+=daysWorked
@@ -174,13 +182,36 @@ class processData:
             # increment date by 1 after each loop
             date += timedelta(days=1)
 
-        totalWage += self.basicSalary
+            #late early leave info
+            totalLate5min += late5min
+            totalLate10min += late10min
+            totalLate20min += late20min
+            totalLate50min += late50min
+            totalLateMax += lateMax
+            totalEarly5min+= early5min
+            totalEarly10min+= early10min
+            totalEarly20min+= early20min
+            totalEarly50min += early50min
+            totalEarlyMax += earlyMax
 
+            totalWage += self.basicSalary
+
+            totalBasicSalary += self.basicSalary
+            totalTransportation += transportation
+            totalMedical += medical
+            totalInjury += injury
+            totalLunch += lunch
+            totalPosition += position
+            totalAddLunch += addLunch
+            totalAddTransportation += addTransportation
+       
         # check if full attendance is given
         if(absentDays >= 1 or infractionTime > 4):
             fullAttendance = False
         
-        return totalDaysWorked, totalOT, totalAdditional, totalWage, totalWage+totalAdditional, totalDeductions, fullAttendance
+        return (totalDaysWorked, totalOT, totalAdditional, totalWage, totalWage+totalAdditional, totalDeductions, fullAttendance, totalLate5min, totalLate10min,
+                totalLate20min, totalLate50min, totalLateMax, totalEarly5min, totalEarly10min, totalEarly20min, totalEarly50min, totalEarlyMax,
+                totalBasicSalary, totalTransportation, totalMedical, totalInjury, totalLunch, totalPosition, totalAddLunch, totalAddTransportation)
 
 
     # Dict, Datetime -> Bool, index
@@ -209,23 +240,27 @@ class processData:
 
         late = 0
         earlyLeave = 0
+        lateTime = 0
+        earlyTime = 0
         # Get the first and last punch in times from the record
         # if punched in before startTime -> round to startTime
         # if punch out after endTime -> round to EndTime
         # if employee forgot to clock in or clock out
 
         if(punchOut-punchIn < timedelta(seconds=1)):
-            return timedelta(seconds=0), 0, late, earlyLeave
+            return timedelta(seconds=0), 0, late, earlyLeave, lateTime, earlyTime
             
         if(datetime.strptime(_record[0:5], "%H:%M") <= startTime):
             punchIn = startTime
         else:
             # late
             late = datetime.strptime(_record[0:5], "%H:%M") - startTime
+            lateTime = int(late.total_seconds() / 60)
 
         if(datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M") < endTime ):
             # early leave
             earlyLeave = endTime - datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M")
+            earlyTime = int(earlyLeave.total_seconds() / 60)
 
         elif(datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M") >= endTime and
             datetime.strptime(_record[len(_record)-5:len(_record)], "%H:%M") <= overtime):
@@ -237,30 +272,75 @@ class processData:
         timeWorked = (punchOut-punchIn)
         timeWorkedHr = timeWorked.seconds/3600
 
-        return timeWorked, timeWorkedHr, late, earlyLeave
+        return timeWorked, timeWorkedHr, late, earlyLeave, lateTime, earlyTime
 
     # Date String -> Tuple(Int Int Int Int Int Int Int Int)
     # produces DaysWorked Allowance, additionalAllowance, the amount earned (in Birr) from OT, # of time absent  
     # amount of deductions and totaltime of late and early leave and overtime worked
     def normalDay(self, _date, _record):
-        daysWorked = absentCount = allowance = OTpay = late = earlyLeave = deductions = additionalAllowance = OTworked = sundayPay = 0
-
+        daysWorked = absentCount = allowance = OTpay = late = earlyLeave = deductions = additionalAllowance = OTworked = sundayPay = lateTime = earlyTime = 0
+        late5min = late10min = late20min = late50min = lateMax = 0
+        early5min = early10min = early20min = early50min = earlyMax = 0
+        transportation = medical = injury = lunch = position = 0
+        addLunch = addTransportation = 0
+                
         # Checks what day of the week it is, if worked on sunday extra pay
         # 0 = monday, 6 = sunday
         if(_date.weekday() != 6):
             if(not _record):
                 absentCount += 1
             else:
+
                 # allowance, additionalAllowance, OTpay, late, earlyLeave = self.processTime(_record)
-                timeWorked, timeWorkedHr, late , earlyLeave = self.processTime(_record)
+                timeWorked, timeWorkedHr, late , earlyLeave, lateTime, earlyTime = self.processTime(_record)
+
+                #Checks how many times employee are late or left early
+                if(lateTime>0 and lateTime<6):
+                    late5min += 1
+                elif(lateTime>5 and lateTime<11):
+                    late10min += 1
+                elif(lateTime>10 and lateTime<21):
+                    late20min += 1
+                elif(lateTime>20 and lateTime<51):
+                    late50min += 1
+                elif(lateTime>50):
+                    lateMax += 1
+
+                if(earlyTime>0 and earlyTime<6):
+                    early5min += 1
+                elif(earlyTime>5 and earlyTime<11):
+                    early10min += 1
+                elif(earlyTime>10 and earlyTime<21):
+                    early20min += 1
+                elif(earlyTime>20 and earlyTime<51):
+                    early50min += 1
+                elif(earlyTime>50):
+                    earlyMax += 1
 
                 # calculate normal salary
                 if(timeWorked < timedelta(hours=8)):
                     allowance = timeWorkedHr*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
 
+                    transportation = timeWorkedHr*c.TRANSPORTATION
+                    medical = timeWorkedHr*c.MEDICAL
+                    injury = timeWorkedHr*c.INJURY
+                    lunch = timeWorkedHr*c.LUNCH
+                    position= timeWorkedHr*c.POSITION
+                    
                     # additional allowance
+                    addLunch = timeWorkedHr*c.ADD_LUNCH
+                    addTransportation = timeWorkedHr*c.ADD_TRANSPORTATION
                     additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
                 else:
+                    transportation = 8*c.TRANSPORTATION
+                    medical = 8*c.MEDICAL
+                    injury = 8*c.INJURY
+                    lunch = 8*c.LUNCH
+                    position= 8*c.POSITION
+
+                    addLunch = 8*c.ADD_LUNCH
+                    addTransportation = 8*c.ADD_TRANSPORTATION
+
                     allowance = 8*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
                     additionalAllowance = 8*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
 
@@ -302,7 +382,9 @@ class processData:
         else:
             totalTime= 0
  
-        return daysWorked, allowance, additionalAllowance, OTpay, absentCount, deductions, totalTime, OTworked, sundayPay
+        return (daysWorked, allowance, additionalAllowance, OTpay, absentCount, deductions, totalTime, OTworked, sundayPay, 
+                late5min, late10min, late20min, late50min, lateMax, early5min, early10min, early20min, early50min, earlyMax,
+                transportation, medical, injury, lunch, position, addLunch, addTransportation)
 
 
     # String -> Tuple(Int Int Int Int Int)
@@ -310,18 +392,38 @@ class processData:
     # prevents other employees to lose full attendance if not working on this particular day
     def dayOff(self, _record):
         dayWorked = allowance = additionalAllowance = OTpay = OTworked = 0
-  
+        transportation = medical = injury = lunch = position = 0
+        addLunch = addTransportation = 0
+
         if(_record):
             # ignore all for the time worked
             timeWorked, timeWorkedHr, *_ = self.processTime(_record)
 
             # calculate normal salary
             if(timeWorked < timedelta(hours=8)):
+                
+                transportation = timeWorkedHr*c.TRANSPORTATION
+                medical = timeWorkedHr*c.MEDICAL
+                injury = timeWorkedHr*c.INJURY
+                lunch = timeWorkedHr*c.LUNCH
+                position= timeWorkedHr*c.POSITION
+
                 allowance = timeWorkedHr*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
                 # additional allowance
+                addLunch = timeWorkedHr*c.ADD_LUNCH
+                addTransportation = timeWorkedHr*c.ADD_TRANSPORTATION
                 additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
 
             else:
+
+                transportation = 8*c.TRANSPORTATION
+                medical = 8*c.MEDICAL
+                injury = 8*c.INJURY
+                lunch = 8*c.LUNCH
+                position= 8*c.POSITION
+
+                addLunch = 8*c.ADD_LUNCH
+                addTransportation = 8*c.ADD_TRANSPORTATION
                 allowance = 8*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
                 additionalAllowance = 8*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
   
@@ -333,13 +435,15 @@ class processData:
 
             dayWorked += 1
 
-        return dayWorked, allowance, additionalAllowance, OTpay, OTworked
+        return dayWorked, allowance, additionalAllowance, OTpay, OTworked, transportation, medical, injury, lunch, position, addLunch, addTransportation
 
     # String -> Tuple(Int Int Int Int Int)
     # produces the amount earned (in Birr) on a holiday for employees who work 
     # prevents other employees to lose full attendance if not working on this particular day
     def holiday(self, _record):
         dayWorked = allowance = additionalAllowance = holidayPay = 0
+        transportation = medical = injury = lunch = position = 0
+        addLunch = addTransportation = 0
 
         if(_record):
             # ignore all for the time worked
@@ -347,11 +451,20 @@ class processData:
 
             holidayPay = timeWorkedHr*c.HOLIDAYRATE
             allowance = timeWorkedHr*(c.MEDICAL+c.INJURY+c.TRANSPORTATION+c.LUNCH+c.POSITION)
+
+            transportation = timeWorkedHr*c.TRANSPORTATION
+            medical = timeWorkedHr*c.MEDICAL
+            injury = timeWorkedHr*c.INJURY
+            lunch = timeWorkedHr*c.LUNCH
+            position= timeWorkedHr*c.POSITION
+
+            addLunch = timeWorkedHr*c.ADD_LUNCH
+            addTransportation = timeWorkedHr*c.ADD_TRANSPORTATION
             additionalAllowance = timeWorkedHr*(c.ADD_LUNCH+c.ADD_TRANSPORTATION)
         
             dayWorked += 1
 
-        return dayWorked, allowance, additionalAllowance, holidayPay
+        return dayWorked, allowance, additionalAllowance, holidayPay, transportation, medical, injury, lunch, position, addLunch, addTransportation
 
     # Datetime -> Int 
     # Given a time, calculates the amount to deduct in Birr
