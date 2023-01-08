@@ -194,9 +194,6 @@ class processData:
             totalEarly50min += early50min
             totalEarlyMax += earlyMax
 
-            totalWage += self.basicSalary
-
-            totalBasicSalary += self.basicSalary
             totalTransportation += transportation
             totalMedical += medical
             totalInjury += injury
@@ -205,9 +202,14 @@ class processData:
             totalAddLunch += addLunch
             totalAddTransportation += addTransportation
        
+        totalWage += self.basicSalary
+        totalBasicSalary += self.basicSalary
+
         # check if full attendance is given
         if(absentDays >= 1 or infractionTime > 4):
             fullAttendance = False
+
+        print(totalWage)
         
         return (totalDaysWorked, totalOT, totalAdditional, totalWage, totalWage+totalAdditional, totalDeductions, fullAttendance, totalLate5min, totalLate10min,
                 totalLate20min, totalLate50min, totalLateMax, totalEarly5min, totalEarly10min, totalEarly20min, totalEarly50min, totalEarlyMax,
