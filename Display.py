@@ -110,6 +110,12 @@ class Display():
                     "Days worked": employee.getDaysWorked(),
                     "OVERTIME HOURS" : "",
                     "Overtime (hours)": employee.getOTworked(),
+                    "SUNDAY WORKING HOURS" : "",
+                    "Sundays days worked": employee.getTotalSundayWorked(),
+                    "Sunday hours": employee.getTotalSundayHours(),
+                    "HOLIDAY WORKING HOURS": "",
+                    "Holidays days worked": employee.getTotalHolidayWorked(),
+                    "Holidays hours": employee.getTotalHolidayHours(),
 
                     "LATE TIMES" : "",
                     "1-5min": employee.getLate5Min(),
@@ -128,24 +134,43 @@ class Display():
                     " ": "",
 
                     "EARNING CALCULATIONS": "",
-                    "Basic Salary": employee.getTotalBasicSalary(),
-                    "Transportation": employee.getTotalTransportation(),
-                    "Medical": employee.getTotalMedical(),
-                    "Injury": employee.getTotalInjury(),
-                    "Lunch": employee.getTotalLunch(),
-                    "Position": employee.getTotalPosition(),
-                    "Additional lunch": employee.getTotalAddLunch(),
-                    "Additional transportation": employee.getTotalAddTransportation(),
+                    "Basic Salary (30birr/day)": employee.getTotalBasicSalary(),
+                    "Transportation (8birr/day)": employee.getTotalTransportation(),
+                    "Overtime Salary (5.625/hour)"  : employee.getTotalOTnormal(),
+                    "Overtime Salary (7.5/hour - SUNDAY)"  : employee.getTotalSundayPay(),
+                    "Overtime Salary (9.375/hour - HOLIDAY)"  : employee.getTotalHolidayPay(),
+
+                    "Medical (4birr/day)": employee.getTotalMedical(),
+                    "Injury (4birr/day)": employee.getTotalInjury(),
+                    "Lunch (25birr/day)": employee.getTotalLunch(),
+                    "Position (25birr/day)": employee.getTotalPosition(),
+                    "Additional lunch(5birr/day)": employee.getTotalAddLunch(),
+                    "Additional transportation(5birr/day)": employee.getTotalAddTransportation(),
 
                     "Additional Allowance total": employee.getAddAllow(),
                     "SubTotal": employee.getSubTotal(),
                     "SubTotal + Additional Allowance": employee.getSubTotalWithAdd(),
 
                     "   ": "",
+                    "LATE DEDUCTIONS": "",
+                    "1-5min (10birr/time)" : employee.getLate5birr(),
+                    "6-10min (20birr/time)" : employee.getLate10birr(),
+                    "11-20min (30birr/time)" : employee.getLate20birr(),
+                    "21-50min (50birr/time)" : employee.getLate50birr(),
+                    "50min+ (70birr/time)" : employee.getLateMaxbirr(),
+                
+                    "EARLY LEAVE DEDUCTIONS": "",
+                    "1-5min (10birr/time) " : employee.getEarly5birr(),
+                    "6-10min (20birr/time) " : employee.getEarly10birr(),
+                    "11-20min (30birr/time) " : employee.getLate20birr(),
+                    "21-50min (50birr/time) " : employee.getEarly50birr(),
+                    "50min+ (70birr/time) " : employee.getEarlyMaxbirr(),
+
 
                     "Deductions": employee.getDeductions(),
                     "Income Tax": employee.getIncomeTax(),
                     "Pension": employee.getPension(),
+                    "Fine": " ",
                     "Total Deductions": employee.getTotalDeductions(),
 
                     "    ": "",
@@ -173,13 +198,14 @@ class Display():
         self.table.showindex = True
 
         # Styling the table
-        self.table.setRowColors(rows=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16], clr="lightblue", cols='all')
-        self.table.setRowColors(rows=[18, 19,20,21,22,23,24,25,26,27,28,29], clr="lightgreen", cols='all')
-        self.table.setRowColors(rows=[31,32,33], clr="#EF6E6E", cols='all')
-        self.table.setRowColors(rows=34, clr="#E24141", cols='all')
-        self.table.setRowColors(rows=36, clr="#58D337", cols='all')
-        self.table.setRowColors(rows=[37,38,39,40], clr="#F7F98E", cols='all')
-        self.table.setRowColors(rows=41, clr="#CCC72B", cols='all')
+        self.table.setRowColors(rows=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22], clr="lightblue", cols='all')
+        self.table.setRowColors(rows=[24,25,26,27,28,29,30,31,32,33,34,35,36,37,38], clr="lightgreen", cols='all')
+
+        self.table.setRowColors(rows=[40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55], clr="#EF6E6E", cols='all')
+        self.table.setRowColors(rows=56, clr="#E24141", cols='all')
+        self.table.setRowColors(rows=58, clr="#58D337", cols='all')
+        self.table.setRowColors(rows=[59,60,61,62], clr="#F7F98E", cols='all')
+        self.table.setRowColors(rows=63, clr="#CCC72B", cols='all')
 
         self.table.show()
 

@@ -14,6 +14,8 @@ compatible with other spreadsheet that are formatted differently.
 To pull data from the spreadsheet, it has to be shared with the following service account: <br/>
 accessgoogleapis@salarycalculator-364616.iam.gserviceaccount.com
 
+To build the .exe run "pyinstaller -f app.py"
+
 ## Library used
   * gspread - To Fetch spreadsheet data  
   * Pandas - To create and organize the dataframe

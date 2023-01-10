@@ -3,7 +3,10 @@ class Employee:
                     _deductions, _incomeTax, _pension, _totalDeductions, _totalBeforeBonus,
                     _fullAttend, _diplomaBonus, _leadershipBonus, _serviceBonus, _grandTotal,
                     _late5min, _late10min, _late20min, _late50min, _lateMax, _early5min, _early10min, _early20min, _early50min, _earlyMax,
-                    _totalBasicSalary, _totalTransportation, _totalMedical, _totalInjury, _totalLunch, _totalPosition, _totalAddLunch, _totalAddTransportation):
+                    _totalBasicSalary, _totalTransportation, _totalMedical, _totalInjury, _totalLunch, _totalPosition, _totalAddLunch, _totalAddTransportation,
+                    _totalSundayWorked, _totalSundayHours, _totalHolidayWorked, _totalHolidayHours,
+                    _late5birr, _late10birr, _late20birr, _late50birr, _lateMaxbirr,
+                    _early5birr, _early10birr, _early20birr, _early50birr, _earlyMaxbirr, _totalOTnormal, _totalHolidayPay, _totalSundayPay):
 
         self.id = _id
         self.name = _name
@@ -41,6 +44,28 @@ class Employee:
         self.totalPosition = _totalPosition
         self.totalAddLunch = _totalAddLunch
         self.totalAddTransportation = _totalAddTransportation
+
+        self.totalSundayWorked = _totalSundayWorked
+        self.totalSundayHours = _totalSundayHours
+
+        self.totalHolidayWorked = _totalHolidayWorked
+        self.totalHolidayHours = _totalHolidayHours
+
+        self.late5birr = _late5birr
+        self.late10birr = _late10birr
+        self.late20birr =_late20birr
+        self.late50birr = _late50birr
+        self.lateMaxBirr = _lateMaxbirr
+
+        self.early5birr = _early5birr
+        self.early10birr = _early10birr
+        self.early20birr = _early20birr
+        self.early50birr = _early50birr
+        self.earlyMaxbirr = _earlyMaxbirr
+        
+        self.totalOTnormal = _totalOTnormal
+        self.totalHolidayPay = _totalHolidayPay
+        self.totalSundayPay = _totalSundayPay
 
 
     # Getter functions
@@ -148,3 +173,54 @@ class Employee:
 
     def getTotalAddTransportation(self):
         return self.totalAddTransportation
+
+    def getTotalSundayWorked(self):
+        return self.totalSundayWorked
+
+    def getTotalSundayHours(self):
+        return self.totalSundayHours
+
+    def getTotalHolidayWorked(self):
+        return self.totalHolidayWorked
+
+    def getTotalHolidayHours(self):
+        return self.totalHolidayHours
+
+    def getLate5birr(self):
+        return self.late5birr
+
+    def getLate10birr(self):
+        return self.late10birr
+    
+    def getLate20birr(self):
+        return self.late20birr
+
+    def getLate50birr(self):
+        return self.late50birr
+
+    def getLateMaxbirr(self):
+        return self.lateMaxBirr
+
+    def getEarly5birr(self):
+        return self.early5birr
+    
+    def getEarly10birr(self):
+        return self.early10birr
+    
+    def getEarly20birr(self):
+        return self.early20birr
+    
+    def getEarly50birr(self):
+        return self.early50birr
+
+    def getEarlyMaxbirr(self):
+        return self.earlyMaxbirr
+
+    def getTotalOTnormal(self):
+        return self.totalOTnormal
+
+    def getTotalHolidayPay(self):
+        return self.totalHolidayPay
+
+    def getTotalSundayPay(self):
+        return self.totalSundayPay
