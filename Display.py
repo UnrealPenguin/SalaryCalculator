@@ -99,8 +99,14 @@ class Display():
 
         process.calculateAttendance(exception)
 
+        
+
         data = []
         for employee in process.getAllEmployees():
+
+
+            print(employee.getEarly20Min())
+            print(employee.getEarly20Min())
 
             data.append(
                 {
@@ -162,7 +168,7 @@ class Display():
                     "EARLY LEAVE DEDUCTIONS": "",
                     "1-5min (10birr/time) " : employee.getEarly5birr(),
                     "6-10min (20birr/time) " : employee.getEarly10birr(),
-                    "11-20min (30birr/time) " : employee.getLate20birr(),
+                    "11-20min (30birr/time) " : employee.getEarly20birr(),
                     "21-50min (50birr/time) " : employee.getEarly50birr(),
                     "50min+ (70birr/time) " : employee.getEarlyMaxbirr(),
 

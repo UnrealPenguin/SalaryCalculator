@@ -35,7 +35,8 @@ class processData:
         # 16 17 OLANI
         # 8 10 ABAYA
         # 70, 71
-        for i in range(8, len(self.record), 2):
+        # len(self.record)
+        for i in range(16, 17, 2):
             
             # resets on every loop
             diplomaBonus = leadershipBonus = serviceBonus = totalDeductions = totalBeforeBonus = grandTotal =0
@@ -188,6 +189,7 @@ class processData:
                 late5min, late10min, late20min, late50min, lateMax, early5min, early10min, early20min, early50min, earlyMax, 
                 transportation, medical, injury, lunch, position, addLunch, addTransportation, sundayWorked, sundayHours) = self.normalDay(date, _record[i])
 
+
             # Time worked
             totalDaysWorked+=daysWorked
 
@@ -241,10 +243,11 @@ class processData:
             totalPosition += position
             totalAddLunch += addLunch
             totalAddTransportation += addTransportation
-       
+
         totalWage += self.basicSalary
         totalBasicSalary += self.basicSalary
 
+        
         # check if full attendance is given
         if(absentDays >= 1 or infractionTime > 4):
             fullAttendance = False
