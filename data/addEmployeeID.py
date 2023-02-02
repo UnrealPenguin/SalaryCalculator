@@ -60,3 +60,9 @@ def addEmployeeID(_sheet):
 
     #BACA
     _sheet.update('O20',50)
+
+    #SORI
+    _sheet.update('O21',51)
+    
+    #MATIWOS
+    _sheet.update('O22',52)

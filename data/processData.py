@@ -154,7 +154,7 @@ class processData:
     
     # Array Array -> Tuple(Int, Float, Float, Float, Float, Float, Bool)
     # Given an employees record and a list of exception(dates) calculate his total hours worked
-    def checkRecord(self, _record, _exceptions):   
+    def checkRecord(self, _record, _exceptions):
 
         date = self.startFrom     
         # by default, every employee has full attendance unless missing one day or late/early leave more than 4 hours
@@ -166,10 +166,10 @@ class processData:
         totalOTnormal = totalHolidayPay = totalSundayPay = 0
 
         fullAttendance = True
-   
-        for i in range(len(_record)):  
-            OTpay = absentCount = deductions = totalTime = allowance = OTworked = holidayPay = holidayWorked = holidayHours = 0   
-            
+
+        for i in range(len(_record)): 
+            OTpay = absentCount = deductions = totalTime = allowance = OTworked = sundayPay = holidayPay = holidayWorked = holidayHours = 0   
+            late5min = late10min = late20min = late50min = lateMax = early5min = early10min = early20min = early50min = earlyMax = 0
 
             # If there are exceptions
             hasException, j = self.isException(_exceptions, date)
@@ -179,6 +179,7 @@ class processData:
                     daysWorked, allowance, additionalAllowance, holidayPay, transportation, medical, injury, lunch, position, addLunch, addTransportation, holidayWorked, holidayHours = self.holiday(_record[i])
                 # if exception is a company day off
                 else:              
+ 
                     daysWorked, allowance, additionalAllowance, OTpay, OTworked, transportation, medical, injury, lunch, position, addLunch, addTransportation = self.dayOff(_record[i])
 
             else:

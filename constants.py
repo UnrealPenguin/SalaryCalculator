@@ -1,7 +1,7 @@
 HEIGHT = 1000
 WIDTH = 1000
 
-NAME = "Salary Calculator v1.0"
+NAME = "Salary Calculator v2.0"
 
 # Basic salary
 # All currency denoted in Birr
