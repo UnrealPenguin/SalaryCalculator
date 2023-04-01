@@ -1,5 +1,5 @@
 from tkinter import *
-import Constants as c
+import constants as c
 import pandas as pd
 from pandastable import Table
 
@@ -103,10 +103,6 @@ class Display():
 
         data = []
         for employee in process.getAllEmployees():
-
-
-            print(employee.getEarly20Min())
-            print(employee.getEarly20Min())
 
             data.append(
                 {

@@ -1,0 +1,5 @@
+{
+    "python.autoComplete.extraPaths": [],
+    "python.defaultInterpreterPath": "/opt/homebrew/bin/python3",
+    "python.analysis.extraPaths": []
+}

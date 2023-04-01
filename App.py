@@ -1,6 +1,6 @@
 from tkinter import *
 from Display import Display
-import Constants as c
+import constants as c
 
 root = Tk()
 Display(root, c.WIDTH, c.HEIGHT)

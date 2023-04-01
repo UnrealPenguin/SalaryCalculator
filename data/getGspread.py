@@ -13,7 +13,7 @@ class getGspread:
             "https://www.googleapis.com/auth/drive"
         ]
         
-        cred = ServiceAccountCredentials.from_json_keyfile_name("data\secret_key.json", scopes=scopes)
+        cred = ServiceAccountCredentials.from_json_keyfile_name("data/secret_key.json", scopes=scopes)
         self.file = gspread.authorize(cred)
 
     # name of spreadsheet in google Sheets (Has to be shared to the Service Account)
